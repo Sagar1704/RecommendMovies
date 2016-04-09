@@ -21,8 +21,8 @@ object ALS {
 
         //loads ratings from file
         //        val ratings = sc.textFile("hdfs://cshadoop1.utdallas.edu//hw3spring/ratings.dat").map(l => (l.split("::")(0), l.split("::")(1), l.split("::")(2)))
-        val ratings = sc.textFile("S:\\Spring2016\\BigData\\Homeworks\\Homework3\\dataset\\ratings.dat").map(l => (l.split("::")(0), l.split("::")(1), l.split("::")(2)))
-
+        //        val ratings = sc.textFile("S:\\Spring2016\\BigData\\Homeworks\\Homework3\\dataset\\ratings.dat").map(l => (l.split("::")(0), l.split("::")(1), l.split("::")(2)))
+        val ratings = sc.textFile(args(0)).map(l => (l.split("::")(0), l.split("::")(1), l.split("::")(2)))
         // counts unique movies
         val itemCount = ratings.map(x => x._2).distinct.count
 
@@ -79,7 +79,7 @@ object ALS {
             //Part B
             val yiyit = myitemMatrix.join(ratingByItem.value).map(item => (item._2._2._1, (item._2._1 * item._2._1.t))).reduceByKey(_ + _).map(item => (item._1, inv(item._2 + regMatrix)))
 
-            var xu = yiyit.join(ruiyi).map(item => (item._1, (item._2._1 * item._2._2)))
+            var xu = yiyit.join(ruiyi).map(item => (item._1, (item._2._1 * item._2._2))).partitionBy(new HashPartitioner(10))
             //
 
             //Equation 3
@@ -88,12 +88,11 @@ object ALS {
 
             val xuxut = myuserMatrix.join(ratingByUser.value).map(item => (item._2._2._1, (item._2._1 * item._2._1.t))).reduceByKey(_ + _).map(item => (item._1, inv(item._2 + regMatrix)))
 
-            var yi = xuxut.join(ruixu).map(item => (item._1, (item._2._1 * item._2._2)))
-            
-            myuserMatrix = xu
-            myitemMatrix = yi
+            var yi = xuxut.join(ruixu).map(item => (item._1, (item._2._1 * item._2._2))).partitionBy(new HashPartitioner(10))
             //
 
+            myuserMatrix = xu
+            myitemMatrix = yi
             //==========================================End of update latent factors=================================================================
         }
         //Output of 3A
@@ -113,7 +112,7 @@ object ALS {
         //Hint: This requires multiplying the latent vector of the user with the latent vector of the  item. Please take the input from the command line. and
         // Provide the predicted rating for user 1 and item 914, user 1757 and item 1777, user 1759 and item 231.
         println("Predicted rating for User:: " + user + " for Movie:: " + movie)
-        val prediction = userLatentVector.asDenseMatrix * itemLatentVector.asDenseMatrix
+        val prediction = (userLatentVector.t * itemLatentVector)
         println(prediction)
         //Your prediction code here
     }
