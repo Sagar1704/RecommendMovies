@@ -100,15 +100,15 @@ object ALS {
         val user = args(1)
         val movie = args(2)
 
-        println("Latent Vector of User::" + user)
         val myUser = myuserMatrix.filter(item => (item._1.equals(user)))
         val userLatentVector = myUser.collect().toMap.get(user).get
-        println(userLatentVector)
 
-        println("Latent Vector of Movie::" + movie)
         val myItem = myitemMatrix.filter(item => (item._1.equals(movie)))
         val itemLatentVector = myItem.collect().toMap.get(movie).get
-        println(itemLatentVector)
+
+        println("Latent Vector of User::" + user + "\n" + userLatentVector)
+        println("Latent Vector of Movie::" + movie + "\n" + itemLatentVector)
+
         //    
         //======================================================Implement code to recalculate the ratings a user will give an item.====================
 
