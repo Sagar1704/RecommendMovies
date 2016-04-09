@@ -79,16 +79,17 @@ object ALS {
             //Part B
             val yiyit = myitemMatrix.join(ratingByItem.value).map(item => (item._2._2._1, (item._2._1 * item._2._1.t))).reduceByKey(_ + _).map(item => (item._1, inv(item._2 + regMatrix)))
 
-            var xu = yiyit.join(ruiyi).map(item => (item._1, (item._2._1 * item._2._2))).partitionBy(new HashPartitioner(10))
+            var xu = yiyit.join(ruiyi).map(item => (item._1, (item._2._1 * item._2._2)))
             //
 
             //Equation 3
             //Part A
             val ruixu = myuserMatrix.join(ratingByUser.value).map(item => (item._2._2._1, (item._2._1.map(_ * item._2._2._2.toLong)))).reduceByKey(_ + _)
 
+            //Part B
             val xuxut = myuserMatrix.join(ratingByUser.value).map(item => (item._2._2._1, (item._2._1 * item._2._1.t))).reduceByKey(_ + _).map(item => (item._1, inv(item._2 + regMatrix)))
 
-            var yi = xuxut.join(ruixu).map(item => (item._1, (item._2._1 * item._2._2))).partitionBy(new HashPartitioner(10))
+            var yi = xuxut.join(ruixu).map(item => (item._1, (item._2._1 * item._2._2)))
             //
 
             myuserMatrix = xu
@@ -100,12 +101,14 @@ object ALS {
         val movie = args(2)
 
         println("Latent Vector of User::" + user)
-        val userLatentVector = myuserMatrix.collect().toMap.get(user).get
-        userLatentVector.foreach(println)
+        val myUser = myuserMatrix.filter(item => (item._1.equals(user)))
+        val userLatentVector = myUser.collect().toMap.get(user).get
+        println(userLatentVector)
 
         println("Latent Vector of Movie::" + movie)
-        val itemLatentVector = myitemMatrix.collect().toMap.get(movie).get
-        itemLatentVector.foreach(println)
+        val myItem = myitemMatrix.filter(item => (item._1.equals(movie)))
+        val itemLatentVector = myItem.collect().toMap.get(movie).get
+        println(itemLatentVector)
         //    
         //======================================================Implement code to recalculate the ratings a user will give an item.====================
 
